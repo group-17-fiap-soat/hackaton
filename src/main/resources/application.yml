@@ -1,0 +1,42 @@
+spring:
+  devtools:
+    restart:
+      enabled: true
+  datasource:
+    url: jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE}
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+  application:
+    name: hackaton
+  threads:
+    virtual:
+      enabled: true
+  flyway:
+    enabled: false
+  security:
+    user:
+      name: admin
+      password: admin
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+logging:
+  level:
+    tech.challenge: debug
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  error:
+    include-stacktrace: on_param
+  tomcat:
+    threads:
+      max: 20

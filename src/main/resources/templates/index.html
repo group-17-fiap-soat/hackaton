@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIAP X - Processador de Vídeos</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="container">
+    <h1>🎬 FIAP X - Processador de Vídeos</h1>
+    <p class="subtitle">Adicione seus vídeos na fila e processe todos de uma vez!</p>
+
+    <div id="drop-zone" class="drop-zone">
+        <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v5h-2zm0 6h2v2h-2z" fill="#0D6EFD"/></svg>
+        <p class="drop-zone-text"><strong>Arraste seus vídeos para cá</strong> ou clique para selecionar</p>
+    </div>
+    <input type="file" id="file-input" accept="video/*" multiple hidden>
+
+    <div class="queue-container">
+        <h3>⏳ Esperando Processamento:</h3>
+        <div id="upload-queue" class="file-list-area">
+            <p class="empty-message">A fila está vazia.</p>
+        </div>
+        <button id="process-btn" class="action-btn" disabled>🚀 Processar Arquivos</button>
+    </div>
+
+    <hr>
+
+    <div class="processed-container">
+        <h3>✅ Arquivos Processados:</h3>
+        <div id="processed-list" class="file-list-area">
+            <p class="empty-message">Nenhum arquivo processado ainda.</p>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/script.js}"></script>
+</body>
+</html>
