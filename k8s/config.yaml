@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hackaton-config
+  labels:
+    app: hackaton-config
+data:
+  DATABASE_HOST: "postgres-service"
+  DATABASE: "hackaton"
+  DATABASE_PORT: "5432"
