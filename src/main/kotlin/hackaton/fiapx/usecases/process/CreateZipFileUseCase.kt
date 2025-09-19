@@ -1,4 +1,4 @@
-package hackaton.fiapx.usecases
+package hackaton.fiapx.usecases.process
 
 import org.springframework.stereotype.Service
 import java.io.File

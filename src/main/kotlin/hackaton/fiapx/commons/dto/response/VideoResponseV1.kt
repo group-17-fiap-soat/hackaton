@@ -6,6 +6,7 @@ import java.util.*
 
 data class VideoResponseV1(
     val id: UUID? = null,
+    val userId: UUID? = null,
     val originalVideoPath: String? = null,
     val zipPath: String? = null,
     val frameCount: Int? = null,
