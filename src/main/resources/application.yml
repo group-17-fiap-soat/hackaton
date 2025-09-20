@@ -51,6 +51,7 @@ server:
   tomcat:
     threads:
       max: 20
+  forward-headers-strategy: native
 
 jwt:
   secret: SEFDS0FUT05fMjAyNV9TRU5IQV9HUk9VUF8xN19GSUFQWAo=

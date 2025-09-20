@@ -9,9 +9,10 @@ import org.springframework.stereotype.Service
 @Service
 class SendEmailUseCase(
     private val mailSender: JavaMailSender,
-    @param:Value("\${spring.mail.username}")
-    private val sender: String
 ) {
+
+    @Value("\${spring.mail.username}")
+    private lateinit var sender: String
 
     fun execute(recipient: String, subject: String, message: String) {
         try {

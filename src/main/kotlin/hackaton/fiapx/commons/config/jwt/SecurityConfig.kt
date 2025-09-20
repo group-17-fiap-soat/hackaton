@@ -33,7 +33,8 @@ class SecurityConfig(
                         "/home",
                         "/css/**",
                         "/js/**",
-                        "/api/auth/**"
+                        "/api/auth/**",
+                        "/favicon.ico"
                     ).permitAll()
                     .anyRequest().authenticated()
             }
