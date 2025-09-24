@@ -10,6 +10,7 @@ data class Video(
     val zipPath: String? = null,
     val frameCount: Int? = null,
     val fileSize: Long? = null,
-    val status: VideoProcessStatusEnum? = null,
+    val status: VideoProcessStatusEnum? = VideoProcessStatusEnum.UPLOADED,
     val uploadedAt: OffsetDateTime? = null,
+    val errorMessage: String? = null,
 )

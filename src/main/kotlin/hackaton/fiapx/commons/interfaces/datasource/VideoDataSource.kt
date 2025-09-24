@@ -1,8 +1,10 @@
 package hackaton.fiapx.commons.interfaces.datasource
 
 import hackaton.fiapx.commons.dao.VideoDAO
-import org.springframework.data.jpa.repository.JpaRepository
-import java.util.*
+import java.util.UUID
 
-interface VideoDataSource : JpaRepository<VideoDAO, UUID> {
+interface VideoDataSource {
+    fun findAll(): List<VideoDAO>
+    fun findById(videoId: UUID): VideoDAO?
+    fun save(videoDao: VideoDAO): VideoDAO
 }

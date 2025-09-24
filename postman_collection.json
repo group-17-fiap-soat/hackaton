@@ -1,0 +1,154 @@
+{
+  "info": {
+    "name": "Video Processing API",
+    "description": "Collection for testing video upload, processing, and download endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Video Upload - With User ID",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Correlation-ID",
+            "value": "{{$randomUUID}}",
+            "description": "Unique correlation ID for tracking"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "video",
+              "type": "file",
+              "src": [],
+              "description": "Video file to upload"
+            },
+            {
+              "key": "userId",
+              "value": "user123",
+              "type": "text",
+              "description": "User ID for the upload"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/upload",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "upload"]
+        },
+        "description": "Upload a video file with specified user ID"
+      }
+    },
+    {
+      "name": "Video Upload - Anonymous User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Correlation-ID",
+            "value": "{{$randomUUID}}",
+            "description": "Unique correlation ID for tracking"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "video",
+              "type": "file",
+              "src": [],
+              "description": "Video file to upload"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/upload",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "upload"]
+        },
+        "description": "Upload a video file without user ID (anonymous)"
+      }
+    },
+    {
+      "name": "Video Upload - Error Test (Invalid File)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Correlation-ID",
+            "value": "error-test-{{$randomUUID}}",
+            "description": "Correlation ID for error testing"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "video",
+              "type": "file",
+              "src": [],
+              "description": "Upload a text file or corrupted file to test error handling"
+            },
+            {
+              "key": "userId",
+              "value": "errorTestUser",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/upload",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "upload"]
+        },
+        "description": "Test error handling by uploading invalid file"
+      }
+    },
+    {
+      "name": "Get Video Status",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/status",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "status"]
+        },
+        "description": "Get status of all uploaded videos"
+      }
+    },
+    {
+      "name": "Download Video",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/octet-stream"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/download/{{filename}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "download", "{{filename}}"]
+        },
+        "description": "Download processed video by filename"
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "filename",
+      "value": "example-video.mp4",
+      "type": "string",
+      "description": "Replace with actual filename from upload response"
+    }
+  ]
+}
