@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
     const uploadQueueDiv = document.getElementById('upload-queue');
@@ -7,6 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let filesToProcess = [];
     const API_BASE_URL = '/api';
+
+    const authHeaders = {
+        'Authorization': `Bearer ${token}`
+    };
 
     function formatFileSize(bytes) {
         if (!bytes || bytes === 0) return '0 Bytes';
@@ -73,8 +83,31 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${formatFileSize(processedFile.fileSize)} | ${formatDate(processedFile.uploadedAt)}
                 </span>
             </div>
-            <a href="${downloadUrl}" class="download-btn" download>⬇️ Download</a>
+            <button class="download-btn">⬇️ Download</button>
         `;
+
+        fileItem.querySelector('.download-btn').addEventListener('click', async () => {
+            try {
+                const response = await fetch(downloadUrl, { headers: authHeaders });
+                if (!response.ok) throw new Error('Falha no download');
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = processedFile.zipPath;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+
+            } catch (error) {
+                console.error('Erro ao baixar o arquivo:', error);
+                alert('Não foi possível baixar o arquivo.');
+            }
+        });
+
         processedListDiv.prepend(fileItem);
     }
 
@@ -95,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const response = await fetch(`${API_BASE_URL}/upload`, {
                     method: 'POST',
+                    headers: authHeaders,
                     body: formData
                 });
 
@@ -113,16 +147,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadProcessedFiles() {
         try {
-            const response = await fetch(`${API_BASE_URL}/status`);
+            const response = await fetch(`${API_BASE_URL}/status`, {
+                headers: authHeaders
+            });
+
+            if (response.status === 401 || response.status === 403) {
+                localStorage.removeItem('jwtToken');
+                window.location.href = '/login';
+                return;
+            }
             if (!response.ok) throw new Error('Falha ao carregar a lista de arquivos.');
 
             const data = await response.json();
             processedListDiv.innerHTML = '';
 
             if (data && data.length > 0) {
-                data.forEach(file => {
-                    addProcessedFileToUI(file);
-                });
+                data.forEach(addProcessedFileToUI);
             } else {
                 processedListDiv.innerHTML = '<p class="empty-message">Nenhum arquivo processado anteriormente.</p>';
             }
@@ -134,4 +174,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateQueueUI();
     loadProcessedFiles();
+
+    const logoutBtn = document.getElementById('logout-btn');
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('jwtToken');
+
+            alert('Você foi desconectado com sucesso.');
+
+            window.location.href = '/login';
+        });
+    }
 });

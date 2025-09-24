@@ -1,4 +1,4 @@
-package hackaton.fiapx.usecases
+package hackaton.fiapx.usecases.process
 
 import hackaton.fiapx.commons.interfaces.gateways.VideoGatewayInterface
 import hackaton.fiapx.entities.Video

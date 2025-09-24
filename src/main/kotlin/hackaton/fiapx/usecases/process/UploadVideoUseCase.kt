@@ -1,7 +1,8 @@
-package hackaton.fiapx.usecases
+package hackaton.fiapx.usecases.process
 
 import hackaton.fiapx.commons.enums.VideoProcessStatusEnum
 import hackaton.fiapx.commons.interfaces.gateways.VideoGatewayInterface
+import hackaton.fiapx.entities.User
 import hackaton.fiapx.entities.Video
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -17,7 +18,7 @@ class UploadVideoUseCase(
     private val processVideo: ProcessVideoUseCase
 ) {
 
-    fun execute(videoFile: MultipartFile): Video {
+    fun execute(user: User, videoFile: MultipartFile): Video {
         if (videoFile.isEmpty) {
             throw IllegalArgumentException("Erro ao receber arquivo de vídeo.")
         }
@@ -38,12 +39,13 @@ class UploadVideoUseCase(
         }
 
         val videoEntity = Video(
+            userId = user.id,
             originalVideoPath = videoPath.toString(),
             fileSize = videoFile.size,
             status = VideoProcessStatusEnum.PROCESSING
         )
 
-        val processResult = processVideo.execute(videoPath.toString(), timestamp)
+        val processResult = processVideo.execute(user, videoPath.toString(), timestamp)
 
         return videoGatewayInterface.save(
             videoEntity.copy(
