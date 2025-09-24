@@ -14,11 +14,11 @@ class LoginUserUseCase(
     private val userGatewayInterface: UserGatewayInterface
 ) {
     @Throws(AuthenticationException::class)
-    fun execute(request: AuthUserRequestV1): User? {
+    fun execute(user: User): User? {
         authenticationManager.authenticate(
-            UsernamePasswordAuthenticationToken(request.email, request.pass)
+            UsernamePasswordAuthenticationToken(user.email, user.passwordHash)
         )
 
-        return userGatewayInterface.findByEmail(request.email!!)
+        return userGatewayInterface.findByEmail(user.email!!)
     }
 }

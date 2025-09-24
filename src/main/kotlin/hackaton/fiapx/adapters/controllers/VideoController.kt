@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.security.Principal
+import hackaton.fiapx.adapters.controllers.operation.VideoOperation
 
 @RestController
 @RequestMapping("/api")
@@ -23,10 +24,10 @@ class VideoController(
     private val listVideo: ListVideoUseCase,
     private val downloadVideo: DownloadVideoUseCase,
     private val getUserByEmail: GetUserByEmailUseCase
-) {
+) : VideoOperation {
 
     @PostMapping("/upload")
-    fun upload(principal: Principal, @RequestParam("video") videoFile: MultipartFile): ResponseEntity<VideoResponseV1> {
+    override fun upload(principal: Principal, @RequestParam("video") videoFile: MultipartFile): ResponseEntity<VideoResponseV1> {
         val user = getUserByEmail.execute(principal.name)
             ?: throw RuntimeException("Usuário não encontrado no sistema.")
 
@@ -38,14 +39,14 @@ class VideoController(
     }
 
     @GetMapping("/status")
-    fun status(): ResponseEntity<List<VideoResponseV1>?> {
+    override fun status(): ResponseEntity<List<VideoResponseV1>?> {
         val videos = listVideo.execute()
         val response = videos.map(VideoMapper::toVideoResponseV1)
         return ResponseEntity.status(HttpStatus.OK).body(response)
     }
 
     @GetMapping("/download/{filename}")
-    fun download(@PathVariable filename: String): ResponseEntity<Resource> {
+    override fun download(@PathVariable filename: String): ResponseEntity<Resource> {
         val file = downloadVideo.execute(filename)
             ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).build()
 

@@ -10,19 +10,12 @@ import org.springframework.stereotype.Service
 @Service
 class RegisterUserUseCase(
     private val userGatewayInterface: UserGatewayInterface,
-    private val passwordEncoder: PasswordEncoder
 ) {
 
-    fun execute(request: RegisterUserRequestV1) {
-        if (userGatewayInterface.findByEmail(request.email!!) != null) {
-            throw UserAlreadyExistsException("Usuário com o e-mail ${request.email} já existe.")
+    fun execute(user: User) {
+        if (userGatewayInterface.findByEmail(user.email!!) != null) {
+            throw UserAlreadyExistsException("Usuário com o e-mail ${user.email} já existe.")
         }
-
-        val user = User(
-            name = request.name,
-            email = request.email,
-            passwordHash = passwordEncoder.encode(request.pass)
-        )
 
         userGatewayInterface.save(user)
     }
