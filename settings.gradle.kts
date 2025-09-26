@@ -1,1 +1,1 @@
-rootProject.name = "fiapx"
+rootProject.name = "hackaton"

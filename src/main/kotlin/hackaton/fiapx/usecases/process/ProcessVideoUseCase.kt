@@ -2,8 +2,8 @@ package hackaton.fiapx.usecases.process
 
 import hackaton.fiapx.commons.dto.response.VideoResponseV1
 import hackaton.fiapx.commons.enums.VideoProcessStatusEnum
-import hackaton.fiapx.commons.interfaces.gateways.UserGatewayInterface
 import hackaton.fiapx.entities.Video
+import hackaton.fiapx.entities.User
 import hackaton.fiapx.usecases.SendEmailUseCase
 import org.springframework.stereotype.Service
 import java.io.File
@@ -14,15 +14,13 @@ import java.time.LocalDateTime
 @Service
 class ProcessVideoUseCase(
     private val createZipFile: CreateZipFileUseCase,
-    private val sendEmail: SendEmailUseCase,
-    private val userGateway: UserGatewayInterface
+    private val sendEmail: SendEmailUseCase
 ) {
 
-    fun execute(video: Video): VideoResponseV1 {
+    fun execute(video: Video, user: User): VideoResponseV1 {
         println("Iniciando processamento: ${video.originalVideoPath}")
         val timestamp = LocalDateTime.now().toString()
         val videoPath = video.originalVideoPath
-        val user = userGateway.findById(video.userId!!)
 
         val tempDir = File("temp", timestamp)
         tempDir.mkdirs()
@@ -52,11 +50,11 @@ class ProcessVideoUseCase(
             if (frames.isEmpty()) {
                 println("Nenhum frame foi extraído do vídeo")
 
-                val subject = "Falha no Processamento do Vídeo $video.originalVideoPath - FIAP X"
+                val subject = "Falha no Processamento do Vídeo ${video.originalVideoPath} - FIAP X"
                 val emailBody = """
-                    Olá, ${user!!.name ?: "usuário"},
+                    Olá, ${user.name ?: "usuário"},
 
-                    Houve um problema ao processar o seu vídeo "$video.originalVideoPath".
+                    Houve um problema ao processar o seu vídeo "${video.originalVideoPath}".
 
                     O sistema não conseguiu extrair nenhum frame do arquivo enviado. Isso geralmente acontece por um dos seguintes motivos:
                     * O arquivo de vídeo está corrompido ou danificado.
@@ -84,9 +82,9 @@ class ProcessVideoUseCase(
             } catch (e: IOException) {
                 println("Erro ao criar arquivo ZIP: ${e.message}")
 
-                val subject = "Falha no Processamento do Vídeo $videoPath - FIAP X"
+                val subject = "Falha no Processamento do Vídeo ${videoPath} - FIAP X"
                 val emailBody = """
-                    Olá, ${user!!.name ?: "usuário"},
+                    Olá, ${user.name ?: "usuário"},
 
                     Houve um problema ao finalizar o processamento do seu vídeo "$videoPath".
 

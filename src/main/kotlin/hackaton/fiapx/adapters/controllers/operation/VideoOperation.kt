@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.multipart.MultipartFile
-import java.security.Principal
+import jakarta.servlet.http.HttpServletRequest
 
 interface VideoOperation {
 
@@ -43,7 +43,7 @@ interface VideoOperation {
     )
     @PostMapping("/upload")
     fun upload(
-        principal: Principal,
+        request: HttpServletRequest,
         @RequestParam("video") videoFile: MultipartFile
     ): ResponseEntity<VideoResponseV1>
 
@@ -61,7 +61,7 @@ interface VideoOperation {
         ]
     )
     @GetMapping("/status")
-    fun status(): ResponseEntity<List<VideoResponseV1>?>
+    fun status(request: HttpServletRequest): ResponseEntity<List<VideoResponseV1>?>
 
     @Operation(
         summary = "Faz download de um vídeo",

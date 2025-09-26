@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import hackaton.fiapx.commons.config.KafkaTopicConfig
-import hackaton.fiapx.commons.dto.kafka.VideoUploadEvent
+import hackaton.fiapx.commons.dto.kafka.VideoEventDto
 import hackaton.fiapx.commons.enums.VideoProcessStatusEnum
 import hackaton.fiapx.commons.interfaces.gateways.VideoGatewayInterface
 import hackaton.fiapx.entities.Video
@@ -44,8 +44,8 @@ class VideoEventConsumer(
 
         try {
             if (event != null) {
-                val videoEvent = objectMapper.convertValue(event, VideoUploadEvent::class.java)
-                handleVideoUploadEvent(videoEvent, acknowledgment)
+                val videoEventDto = objectMapper.convertValue(event, VideoEventDto::class.java)
+                handleVideoUploadEvent(videoEventDto, acknowledgment)
             } else {
                 logger.warn("Received null event")
                 acknowledgment.acknowledge()
@@ -57,7 +57,7 @@ class VideoEventConsumer(
     }
 
     private fun handleVideoUploadEvent(
-        event: VideoUploadEvent,
+        event: VideoEventDto,
         acknowledgment: Acknowledgment
     ) {
         logger.info("Processing video upload event: videoId=${event.videoId}")
@@ -65,8 +65,25 @@ class VideoEventConsumer(
         videoGateway.findById(event.videoId)?.let { video ->
             try {
                 updateVideoStatus(video, VideoProcessStatusEnum.PROCESSING, "Video processing started")
-                processVideoUseCase.execute(video)
-                updateVideoStatus(video, VideoProcessStatusEnum.FINISHED, "Video processing completed successfully")
+
+                // Criar objeto User a partir das informações do evento
+                val user = hackaton.fiapx.entities.User(
+                    id = event.userId,
+                    name = event.userName,
+                    email = event.userEmail
+                )
+
+                val processResult = processVideoUseCase.execute(video, user)
+
+                // Atualizar o vídeo com os resultados do processamento
+                val updatedVideo = video.copy(
+                    status = processResult.status,
+                    zipPath = processResult.zipPath,
+                    frameCount = processResult.frameCount,
+                    errorMessage = if (processResult.status == VideoProcessStatusEnum.ERROR)
+                        "Video processing completed successfully" else null
+                )
+                videoGateway.save(updatedVideo)
 
                 acknowledgment.acknowledge()
                 logger.info("Successfully processed video upload event for videoId: ${event.videoId}")

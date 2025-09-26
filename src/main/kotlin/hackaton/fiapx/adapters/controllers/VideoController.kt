@@ -2,12 +2,12 @@ package hackaton.fiapx.adapters.controllers
 
 import hackaton.fiapx.adapters.controllers.operation.VideoOperation
 import hackaton.fiapx.adapters.presenters.VideoMapper
+import hackaton.fiapx.commons.config.jwt.JwtUserService
 import hackaton.fiapx.commons.dto.response.VideoResponseV1
 import hackaton.fiapx.commons.enums.VideoProcessStatusEnum
 import hackaton.fiapx.usecases.process.DownloadVideoUseCase
 import hackaton.fiapx.usecases.process.ListVideoUseCase
 import hackaton.fiapx.usecases.process.UploadVideoUseCase
-import hackaton.fiapx.usecases.user.GetUserByEmailUseCase
 import org.slf4j.LoggerFactory
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
@@ -17,7 +17,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
-import java.security.Principal
+import jakarta.servlet.http.HttpServletRequest
 
 @RestController
 @RequestMapping("/api")
@@ -25,18 +25,18 @@ class VideoController(
     private val uploadVideo: UploadVideoUseCase,
     private val listVideo: ListVideoUseCase,
     private val downloadVideo: DownloadVideoUseCase,
-    private val getUserByEmail: GetUserByEmailUseCase
+    private val jwtUserService: JwtUserService
 ) : VideoOperation {
 
     private val logger = LoggerFactory.getLogger(VideoController::class.java)
 
     @PostMapping("/upload")
     override fun upload(
-        principal: Principal,
+        request: HttpServletRequest,
         @RequestParam("video") videoFile: MultipartFile
     ): ResponseEntity<VideoResponseV1> {
-        val user = getUserByEmail.execute(principal.name)
-            ?: throw RuntimeException("Usuário não encontrado no sistema.")
+        val user = jwtUserService.getUserFromRequest(request)
+            ?: throw RuntimeException("Usuário não encontrado no token JWT.")
 
         logger.info("Video upload request received - UserId: ${user.id}, FileName: ${videoFile.originalFilename}")
 
@@ -65,8 +65,11 @@ class VideoController(
     }
 
     @GetMapping("/status")
-    override fun status(): ResponseEntity<List<VideoResponseV1>?> {
-        val videos = listVideo.execute()
+    override fun status(request: HttpServletRequest): ResponseEntity<List<VideoResponseV1>?> {
+        val user = jwtUserService.getUserFromRequest(request)
+            ?: throw RuntimeException("Usuário não encontrado no token JWT.")
+
+        val videos = listVideo.execute(user)
         val response = videos.map(VideoMapper::toVideoResponseV1)
         return ResponseEntity.status(HttpStatus.OK).body(response)
     }

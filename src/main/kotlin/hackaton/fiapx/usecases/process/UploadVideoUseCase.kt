@@ -1,6 +1,6 @@
 package hackaton.fiapx.usecases.process
 
-import hackaton.fiapx.commons.dto.kafka.VideoUploadEvent
+import hackaton.fiapx.commons.dto.kafka.VideoEventDto
 import hackaton.fiapx.commons.enums.VideoProcessStatusEnum
 import hackaton.fiapx.commons.interfaces.gateways.VideoEventGateway
 import hackaton.fiapx.commons.interfaces.gateways.VideoGatewayInterface
@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -57,7 +56,12 @@ class UploadVideoUseCase(
 
         val savedVideo = videoGateway.save(videoEntity)
 
-        val uploadEvent = VideoUploadEvent(videoId = videoId)
+        val uploadEvent = VideoEventDto(
+            videoId = videoId,
+            userId = user.id!!,
+            userEmail = user.email!!,
+            userName = user.name
+        )
 
         videoEventGateway.publishToProcessingTopic(uploadEvent, "video upload", videoId.toString())
 

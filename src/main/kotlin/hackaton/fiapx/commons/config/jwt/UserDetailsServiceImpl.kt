@@ -1,6 +1,5 @@
 package hackaton.fiapx.commons.config.jwt
 
-import hackaton.fiapx.commons.interfaces.gateways.UserGatewayInterface
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -8,16 +7,15 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 
 @Service
-class UserDetailsServiceImpl(private val userGatewayInterface: UserGatewayInterface) : UserDetailsService {
+class UserDetailsServiceImpl : UserDetailsService {
 
     override fun loadUserByUsername(username: String): UserDetails {
-        val userDAO = userGatewayInterface.findByEmail(username)
-            ?: throw UsernameNotFoundException("Usuário não encontrado com o email: $username")
-
+        // Como estamos usando JWT, este método será chamado apenas para validação do token
+        // As informações do usuário já estão no JWT, então retornamos um usuário básico
         return User.builder()
-            .username(userDAO.email)
-            .password(userDAO.passwordHash)
-            .roles("USER")
+            .username(username)
+            .password("") // Não precisamos da senha pois usamos JWT
+            .authorities("USER")
             .build()
     }
 }

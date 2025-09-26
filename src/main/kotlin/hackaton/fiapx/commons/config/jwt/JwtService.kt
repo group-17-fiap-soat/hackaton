@@ -55,7 +55,7 @@ class JwtService(
         return claimsResolver(claims)
     }
 
-    private fun extractAllClaims(token: String): Claims {
+    fun extractAllClaims(token: String): Claims {
         return Jwts.parserBuilder()
             .setSigningKey(getSignInKey())
             .build()

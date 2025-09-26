@@ -11,8 +11,7 @@ import org.springframework.web.filter.OncePerRequestFilter
 
 @Component
 class JwtAuthenticationFilter(
-    private val jwtService: JwtService,
-    private val userDetailsService: UserDetailsServiceImpl
+    private val jwtService: JwtService
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
@@ -31,7 +30,12 @@ class JwtAuthenticationFilter(
         val userEmail = jwtService.extractUsername(jwt)
 
         if (SecurityContextHolder.getContext().authentication == null) {
-            val userDetails = this.userDetailsService.loadUserByUsername(userEmail)
+            // Criar UserDetails diretamente sem buscar no banco
+            val userDetails = org.springframework.security.core.userdetails.User.builder()
+                .username(userEmail)
+                .password("") // Não precisamos da senha pois usamos JWT
+                .authorities("USER")
+                .build()
 
             if (jwtService.isTokenValid(jwt, userDetails)) {
                 val authToken = UsernamePasswordAuthenticationToken(

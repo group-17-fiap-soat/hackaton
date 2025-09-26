@@ -47,12 +47,23 @@ class DlqServiceImpl(
         try {
             if (originalEvent is Map<*, *>) {
                 val videoId = originalEvent["videoId"] as UUID
+                val userId = originalEvent["userId"] as? UUID
+                val userEmail = originalEvent["userEmail"] as? String
+                val userName = originalEvent["userName"] as? String
+
                 val video = videoGateway.findById(videoId)
 
-                if (video != null) {
+                if (video != null && userId != null && userEmail != null) {
                     logger.info("Attempting to retry video processing for videoId: $videoId")
 
-                    processVideoUseCase.execute(video)
+                    // Criar objeto User a partir das informações do evento DLQ
+                    val user = hackaton.fiapx.entities.User(
+                        id = userId,
+                        name = userName,
+                        email = userEmail
+                    )
+
+                    processVideoUseCase.execute(video, user)
 
                     updateVideoStatus(
                         videoId,
@@ -62,7 +73,7 @@ class DlqServiceImpl(
                     logger.info("Successfully processed video $videoId from DLQ")
 
                 } else {
-                    logger.error("Invalid video upload event in DLQ - missing videoId or userId")
+                    logger.error("Invalid video upload event in DLQ - missing videoId, userId, or userEmail")
                 }
             } else {
                 logger.error("Invalid DLQ event format for video upload")
