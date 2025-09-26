@@ -8,7 +8,7 @@ import hackaton.fiapx.commons.dto.kafka.VideoUploadEvent
 import hackaton.fiapx.commons.enums.VideoProcessStatusEnum
 import hackaton.fiapx.commons.interfaces.gateways.VideoGatewayInterface
 import hackaton.fiapx.entities.Video
-import hackaton.fiapx.usecases.ProcessVideoUseCase
+import hackaton.fiapx.usecases.process.ProcessVideoUseCase
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.annotation.KafkaListener

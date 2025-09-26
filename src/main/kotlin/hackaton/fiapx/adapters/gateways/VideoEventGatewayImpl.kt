@@ -1,8 +1,7 @@
 package hackaton.fiapx.adapters.gateways
 
-import hackaton.fiapx.commons.dto.kafka.VideoUploadEvent
-import hackaton.fiapx.commons.interfaces.gateways.VideoEventGateway
 import hackaton.fiapx.commons.config.KafkaTopicConfig
+import hackaton.fiapx.commons.interfaces.gateways.VideoEventGateway
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.support.SendResult
@@ -15,10 +14,6 @@ class VideoEventGatewayImpl(
 ) : VideoEventGateway {
 
     private val logger = LoggerFactory.getLogger(VideoEventGatewayImpl::class.java)
-
-    override fun publishVideoUploadEvent(event: VideoUploadEvent) {
-        publishToProcessingTopic(event, "video upload", event.videoId.toString())
-    }
 
     override fun sendToDlq(originalEvent: Any, exception: Throwable) {
         try {
@@ -37,7 +32,7 @@ class VideoEventGatewayImpl(
         }
     }
 
-    private fun publishToProcessingTopic(event: Any, eventType: String, videoId: String) {
+    override fun publishToProcessingTopic(event: Any, eventType: String, videoId: String) {
         val key = "video-${videoId}"
 
         logger.info("Publishing $eventType event for videoId: $videoId")

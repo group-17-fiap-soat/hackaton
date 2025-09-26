@@ -1,15 +1,13 @@
 package hackaton.fiapx.adapters.controllers
 
+import hackaton.fiapx.adapters.controllers.operation.VideoOperation
 import hackaton.fiapx.adapters.presenters.VideoMapper
 import hackaton.fiapx.commons.dto.response.VideoResponseV1
+import hackaton.fiapx.commons.enums.VideoProcessStatusEnum
 import hackaton.fiapx.usecases.process.DownloadVideoUseCase
 import hackaton.fiapx.usecases.process.ListVideoUseCase
 import hackaton.fiapx.usecases.process.UploadVideoUseCase
 import hackaton.fiapx.usecases.user.GetUserByEmailUseCase
-import hackaton.fiapx.commons.enums.VideoProcessStatusEnum
-import hackaton.fiapx.usecases.DownloadVideoUseCase
-import hackaton.fiapx.usecases.ListVideoUseCase
-import hackaton.fiapx.usecases.UploadVideoUseCase
 import org.slf4j.LoggerFactory
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
@@ -19,9 +17,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
-import java.util.*
 import java.security.Principal
-import hackaton.fiapx.adapters.controllers.operation.VideoOperation
 
 @RestController
 @RequestMapping("/api")
@@ -37,31 +33,26 @@ class VideoController(
     @PostMapping("/upload")
     override fun upload(
         principal: Principal,
-        @RequestParam("video") videoFile: MultipartFile,
-        @RequestHeader("X-Correlation-ID", required = false) correlationId: String?
+        @RequestParam("video") videoFile: MultipartFile
     ): ResponseEntity<VideoResponseV1> {
         val user = getUserByEmail.execute(principal.name)
             ?: throw RuntimeException("Usuário não encontrado no sistema.")
 
-
-        val requestId = correlationId ?: UUID.randomUUID().toString()
-        val actualUserId = userId ?: "anonymous"
-
-        logger.info("Video upload request received - RequestId: $requestId, UserId: $actualUserId, FileName: ${videoFile.originalFilename}")
+        logger.info("Video upload request received - UserId: ${user.id}, FileName: ${videoFile.originalFilename}")
 
         try {
-            val savedVideo = uploadVideo.execute(videoFile, actualUserId)
+            val savedVideo = uploadVideo.execute(videoFile, user)
 
             val response = VideoMapper.toVideoResponseV1(savedVideo).copy(
                 status = VideoProcessStatusEnum.UPLOADED,
                 message = "Video uploaded successfully and queued for processing"
             )
 
-            logger.info("Video upload successful - VideoId: ${savedVideo.id}, RequestId: $requestId")
+            logger.info("Video upload successful - VideoId: ${savedVideo.id}")
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(response)
 
         } catch (exception: Exception) {
-            logger.error("Video upload failed - RequestId: $requestId, UserId: $actualUserId", exception)
+            logger.error("Video upload failed - UserId: ${user.id}", exception)
 
             val errorResponse = VideoResponseV1(
                 id = null,

@@ -3,7 +3,7 @@ package hackaton.fiapx.adapters.services
 import hackaton.fiapx.commons.enums.VideoProcessStatusEnum
 import hackaton.fiapx.commons.interfaces.gateways.VideoGatewayInterface
 import hackaton.fiapx.commons.interfaces.services.DlqService
-import hackaton.fiapx.usecases.ProcessVideoUseCase
+import hackaton.fiapx.usecases.process.ProcessVideoUseCase
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.util.*

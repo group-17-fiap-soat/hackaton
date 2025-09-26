@@ -4,6 +4,7 @@ import hackaton.fiapx.commons.dto.kafka.VideoUploadEvent
 import hackaton.fiapx.commons.enums.VideoProcessStatusEnum
 import hackaton.fiapx.commons.interfaces.gateways.VideoEventGateway
 import hackaton.fiapx.commons.interfaces.gateways.VideoGatewayInterface
+import hackaton.fiapx.entities.User
 import hackaton.fiapx.entities.Video
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -22,7 +23,7 @@ class UploadVideoUseCase(
 ) {
 
 
-    fun execute(videoFile: MultipartFile, userId: String? = null): Video {
+    fun execute(videoFile: MultipartFile, user: User): Video {
         if (videoFile.isEmpty) {
             throw IllegalArgumentException("Erro ao receber arquivo de vídeo.")
         }
@@ -50,14 +51,15 @@ class UploadVideoUseCase(
             originalVideoPath = videoPath.toString(),
             fileSize = videoFile.size,
             status = VideoProcessStatusEnum.UPLOADED,
-            uploadedAt = OffsetDateTime.now()
+            uploadedAt = OffsetDateTime.now(),
+            userId = user.id,
         )
 
         val savedVideo = videoGateway.save(videoEntity)
 
         val uploadEvent = VideoUploadEvent(videoId = videoId)
 
-        videoEventGateway.publishVideoUploadEvent(uploadEvent)
+        videoEventGateway.publishToProcessingTopic(uploadEvent, "video upload", videoId.toString())
 
         return savedVideo
     }
