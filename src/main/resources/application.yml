@@ -11,6 +11,9 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
   application:
     name: hackaton
   threads:
@@ -37,10 +40,30 @@ spring:
           auth: true
           starttls:
             enable: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      retries: ${KAFKA_RETRIES:3}
+      batch-size: ${KAFKA_BATCH_SIZE:16384}
+      linger-ms: ${KAFKA_LINGER_MS:5}
+      acks: all
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP_ID:hackaton-video-processing}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: ${KAFKA_AUTO_OFFSET_RESET:earliest}
+      enable-auto-commit: ${KAFKA_ENABLE_AUTO_COMMIT:true}
+      properties:
+        spring.json.trusted.packages: "tech.challenge.hackaton"
+
 
 logging:
   level:
     tech.challenge: debug
+    org.apache.kafka: info
+    org.springframework.kafka: debug
 
 server:
   port: ${SERVER_PORT:8080}

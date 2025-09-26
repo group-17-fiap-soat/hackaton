@@ -1,22 +1,28 @@
 package hackaton.fiapx.usecases.process
 
-import hackaton.fiapx.commons.dto.response.VideoProcessResponseV1
+import hackaton.fiapx.commons.dto.response.VideoResponseV1
 import hackaton.fiapx.commons.enums.VideoProcessStatusEnum
-import hackaton.fiapx.entities.User
+import hackaton.fiapx.commons.interfaces.gateways.UserGatewayInterface
+import hackaton.fiapx.entities.Video
 import hackaton.fiapx.usecases.SendEmailUseCase
 import org.springframework.stereotype.Service
 import java.io.File
 import java.io.IOException
 import java.nio.file.Paths
+import java.time.LocalDateTime
 
 @Service
 class ProcessVideoUseCase(
     private val createZipFile: CreateZipFileUseCase,
     private val sendEmail: SendEmailUseCase,
+    private val userGateway: UserGatewayInterface
 ) {
 
-    fun execute(user: User, videoPath: String, timestamp: String): VideoProcessResponseV1 {
-        println("Iniciando processamento: $videoPath")
+    fun execute(video: Video): VideoResponseV1 {
+        println("Iniciando processamento: ${video.originalVideoPath}")
+        val timestamp = LocalDateTime.now().toString()
+        val videoPath = video.originalVideoPath
+        val user = userGateway.findById(video.userId!!)
 
         val tempDir = File("temp", timestamp)
         tempDir.mkdirs()
@@ -38,7 +44,7 @@ class ProcessVideoUseCase(
 
             if (exitCode != 0) {
                 println("Erro no  ffmpeg: Exit $exitCode\nOutput: $output")
-                return VideoProcessResponseV1(status = VideoProcessStatusEnum.ERROR)
+                return VideoResponseV1(status = VideoProcessStatusEnum.ERROR)
             }
 
             val frames = tempDir.listFiles { _, name -> name.endsWith(".png") }?.toList() ?: emptyList()
@@ -46,11 +52,11 @@ class ProcessVideoUseCase(
             if (frames.isEmpty()) {
                 println("Nenhum frame foi extraído do vídeo")
 
-                val subject = "Falha no Processamento do Vídeo $videoPath - FIAP X"
+                val subject = "Falha no Processamento do Vídeo $video.originalVideoPath - FIAP X"
                 val emailBody = """
-                    Olá, ${user.name ?: "usuário"},
+                    Olá, ${user!!.name ?: "usuário"},
 
-                    Houve um problema ao processar o seu vídeo "$videoPath".
+                    Houve um problema ao processar o seu vídeo "$video.originalVideoPath".
 
                     O sistema não conseguiu extrair nenhum frame do arquivo enviado. Isso geralmente acontece por um dos seguintes motivos:
                     * O arquivo de vídeo está corrompido ou danificado.
@@ -65,7 +71,7 @@ class ProcessVideoUseCase(
                 """.trimIndent()
 
                 sendEmail.execute(user.email!!, subject, emailBody)
-                return VideoProcessResponseV1(status = VideoProcessStatusEnum.ERROR)
+                return VideoResponseV1(status = VideoProcessStatusEnum.ERROR)
             }
 
             println("📸 Extraídos ${frames.size} frames")
@@ -80,7 +86,7 @@ class ProcessVideoUseCase(
 
                 val subject = "Falha no Processamento do Vídeo $videoPath - FIAP X"
                 val emailBody = """
-                    Olá, ${user.name ?: "usuário"},
+                    Olá, ${user!!.name ?: "usuário"},
 
                     Houve um problema ao finalizar o processamento do seu vídeo "$videoPath".
 
@@ -96,15 +102,15 @@ class ProcessVideoUseCase(
                 """.trimIndent()
 
                 sendEmail.execute(user.email!!, subject, emailBody)
-                return VideoProcessResponseV1(status = VideoProcessStatusEnum.ERROR)
+                return VideoResponseV1(status = VideoProcessStatusEnum.ERROR)
             }
 
             println("✅ ZIP criado: ${zipPath.absolutePath}")
 
-            return VideoProcessResponseV1(
+            return VideoResponseV1(
                 zipPath = zipFilename,
                 frameCount = frames.size,
-                status = VideoProcessStatusEnum.SUCCESS
+                status = VideoProcessStatusEnum.FINISHED
             )
 
         } finally {

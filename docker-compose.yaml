@@ -1,4 +1,77 @@
 services:
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: hackaton-kafka
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 300000
+      KAFKA_LOG_CLEANUP_POLICY: delete
+      CLUSTER_ID: MkU3OEVBNzE4ODEyNDM2Qg
+    command: |
+      bash -c "
+        # Start Kafka in background
+        /etc/confluent/docker/run &
+
+        # Wait for Kafka to be ready
+        echo 'Waiting for Kafka to start...'
+        while ! kafka-broker-api-versions --bootstrap-server localhost:9092 > /dev/null 2>&1; do
+          sleep 2
+        done
+
+        echo 'Creating topics...'
+        kafka-topics --create --if-not-exists --topic hackaton.video.processing.events --partitions 6 --replication-factor 1 --bootstrap-server localhost:9092
+        kafka-topics --create --if-not-exists --topic hackaton.video.processing.dlq --partitions 2 --replication-factor 1 --bootstrap-server localhost:9092
+
+        echo 'Topics created successfully:'
+        kafka-topics --list --bootstrap-server localhost:9092
+
+        # Keep Kafka running
+        wait
+      "
+    networks:
+      - hackaton-network
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: hackaton-kafka-ui
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8081:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      DYNAMIC_CONFIG_ENABLED: true
+    networks:
+      - hackaton-network
+    restart: unless-stopped
+
   postgres:
     image: postgres:16-alpine
     env_file:
@@ -8,7 +81,7 @@ services:
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     ports:
-      - '${DATABASE_PORT}:${DATABASE_PORT}'
+      - ${DATABASE_PORT}:${DATABASE_PORT}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -35,9 +108,13 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   postgres_data:
+  kafka_data:
 
 networks:
   hackaton-network:
