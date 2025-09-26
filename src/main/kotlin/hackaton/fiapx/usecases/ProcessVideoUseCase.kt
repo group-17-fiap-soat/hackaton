@@ -1,3 +1,4 @@
+
 package hackaton.fiapx.usecases
 
 import hackaton.fiapx.commons.dto.response.VideoResponseV1
@@ -33,7 +34,6 @@ class ProcessVideoUseCase(
             val process = processBuilder.start()
             val output = process.inputStream.bufferedReader().readText()
             val exitCode = process.waitFor()
-
             if (exitCode != 0) {
                 println("Erro no  ffmpeg: Exit $exitCode\nOutput: $output")
             }

@@ -19,6 +19,9 @@ data class VideoDAO(
     @UuidGenerator
     val id: UUID? = null,
 
+    @Column(name = "user_id")
+    val userId: UUID? = null,
+
     @Column(name = "original_video_path")
     val originalVideoPath: String? = null,
 

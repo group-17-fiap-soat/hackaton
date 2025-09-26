@@ -29,6 +29,17 @@ spring:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${EMAIL_USERNAME}
+    password: ${EMAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
@@ -47,6 +58,7 @@ spring:
       properties:
         spring.json.trusted.packages: "tech.challenge.hackaton"
 
+
 logging:
   level:
     tech.challenge: debug
@@ -54,7 +66,7 @@ logging:
     org.springframework.kafka: debug
 
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
   servlet:
     context-path: /
   error:
@@ -62,3 +74,9 @@ server:
   tomcat:
     threads:
       max: 20
+  forward-headers-strategy: native
+
+jwt:
+  secret: SEFDS0FUT05fMjAyNV9TRU5IQV9HUk9VUF8xN19GSUFQWAo=
+  expiration:
+    ms: 86400000

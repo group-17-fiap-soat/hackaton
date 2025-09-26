@@ -164,3 +164,27 @@ h3 {
 .download-btn:hover {
     background: #157347;
 }
+
+
+.logout-button {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+
+    background-color: #343a40;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 15px;
+    font-family: 'Roboto', sans-serif;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.2s, transform 0.2s;
+    z-index: 1000;
+}
+
+.logout-button:hover {
+    background-color: #495057;
+    transform: translateY(-2px);
+}

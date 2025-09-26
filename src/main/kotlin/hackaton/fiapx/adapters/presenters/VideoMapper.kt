@@ -9,6 +9,7 @@ object VideoMapper {
     fun toEntity(dao: VideoDAO) =
         Video(
             id = dao.id,
+            userId = dao.userId,
             originalVideoPath = dao.originalVideoPath,
             zipPath = dao.zipPath,
             frameCount = dao.frameCount,
@@ -20,6 +21,7 @@ object VideoMapper {
     fun toDAO(entity: Video) =
         VideoDAO(
             id = entity.id,
+            userId = entity.userId,
             originalVideoPath = entity.originalVideoPath,
             zipPath = entity.zipPath,
             frameCount = entity.frameCount,
@@ -31,6 +33,7 @@ object VideoMapper {
     fun fromDaoToEntity(dao: VideoDAO) =
         Video(
             id = dao.id,
+            userId = dao.userId,
             originalVideoPath = dao.originalVideoPath,
             zipPath = dao.zipPath,
             frameCount = dao.frameCount,
@@ -42,7 +45,8 @@ object VideoMapper {
     fun toVideoResponseV1(entity: Video) =
         VideoResponseV1(
             id = entity.id,
-            originalVideoPath = entity.originalVideoPath ?: "unknown",
+            userId = entity.userId,
+            originalVideoPath = entity.originalVideoPath,
             zipPath = entity.zipPath,
             frameCount = entity.frameCount,
             fileSize = entity.fileSize,

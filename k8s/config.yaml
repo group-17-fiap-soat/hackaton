@@ -8,3 +8,4 @@ data:
   DATABASE_HOST: "postgres-service"
   DATABASE: "hackaton"
   DATABASE_PORT: "5432"
+  EMAIL_USERNAME: ""

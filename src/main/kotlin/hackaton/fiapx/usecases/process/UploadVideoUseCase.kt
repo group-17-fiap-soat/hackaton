@@ -1,4 +1,4 @@
-package hackaton.fiapx.usecases
+package hackaton.fiapx.usecases.process
 
 import hackaton.fiapx.commons.dto.kafka.VideoUploadEvent
 import hackaton.fiapx.commons.enums.VideoProcessStatusEnum

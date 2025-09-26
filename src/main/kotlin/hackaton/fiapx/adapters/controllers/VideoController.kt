@@ -2,6 +2,10 @@ package hackaton.fiapx.adapters.controllers
 
 import hackaton.fiapx.adapters.presenters.VideoMapper
 import hackaton.fiapx.commons.dto.response.VideoResponseV1
+import hackaton.fiapx.usecases.process.DownloadVideoUseCase
+import hackaton.fiapx.usecases.process.ListVideoUseCase
+import hackaton.fiapx.usecases.process.UploadVideoUseCase
+import hackaton.fiapx.usecases.user.GetUserByEmailUseCase
 import hackaton.fiapx.commons.enums.VideoProcessStatusEnum
 import hackaton.fiapx.usecases.DownloadVideoUseCase
 import hackaton.fiapx.usecases.ListVideoUseCase
@@ -16,22 +20,29 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.util.*
+import java.security.Principal
+import hackaton.fiapx.adapters.controllers.operation.VideoOperation
 
 @RestController
 @RequestMapping("/api")
 class VideoController(
     private val uploadVideo: UploadVideoUseCase,
     private val listVideo: ListVideoUseCase,
-    private val downloadVideo: DownloadVideoUseCase
-) {
+    private val downloadVideo: DownloadVideoUseCase,
+    private val getUserByEmail: GetUserByEmailUseCase
+) : VideoOperation {
+
     private val logger = LoggerFactory.getLogger(VideoController::class.java)
 
     @PostMapping("/upload")
-    fun upload(
+    override fun upload(
+        principal: Principal,
         @RequestParam("video") videoFile: MultipartFile,
-        @RequestParam("userId", required = false) userId: String?,
         @RequestHeader("X-Correlation-ID", required = false) correlationId: String?
     ): ResponseEntity<VideoResponseV1> {
+        val user = getUserByEmail.execute(principal.name)
+            ?: throw RuntimeException("Usuário não encontrado no sistema.")
+
 
         val requestId = correlationId ?: UUID.randomUUID().toString()
         val actualUserId = userId ?: "anonymous"
@@ -63,14 +74,14 @@ class VideoController(
     }
 
     @GetMapping("/status")
-    fun status(): ResponseEntity<List<VideoResponseV1>?> {
+    override fun status(): ResponseEntity<List<VideoResponseV1>?> {
         val videos = listVideo.execute()
         val response = videos.map(VideoMapper::toVideoResponseV1)
         return ResponseEntity.status(HttpStatus.OK).body(response)
     }
 
-    @GetMapping("/download")
-    fun download(@RequestParam filename: String): ResponseEntity<Resource> {
+    @GetMapping("/download/{filename}")
+    override fun download(@PathVariable filename: String): ResponseEntity<Resource> {
         val file = downloadVideo.execute(filename)
             ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).build()
 
