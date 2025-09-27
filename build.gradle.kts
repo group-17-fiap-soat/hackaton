@@ -93,6 +93,16 @@ tasks.jacocoTestReport {
         csv.required = false
         html.required = true
     }
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) {
+                // Include only usecases
+                include("**/usecases/**")
+                // Exclude ProcessVideoUseCase specifically
+                exclude("**/usecases/process/ProcessVideoUseCase*")
+            }
+        })
+    )
 }
 
 
@@ -100,13 +110,23 @@ sonar {
     properties {
         property("sonar.projectKey", "hackaton")
         property("sonar.projectName", "hackaton")
-        property("sonar.coverage.inclusions", "src/main/kotlin/hackaton/fiapx/usecases//*.kt")
+        // Include only usecases in coverage
+        property("sonar.coverage.inclusions", "**/usecases/**/*.kt")
         property("sonar.tests", "src/test/kotlin")
         property("sonar.kotlin.coverage.reportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
         property("sonar.scanner.metadataFilePath", file("${layout.buildDirectory}/sonar/report-task.txt").absolutePath)
 
-        property("sonar.coverage.exclusions", "/src/test/, /Test.kt")
-        property("sonar.coverage.exclusions", "src/main/kotlin/hackaton/fiapx/usecases/process/, /ProcessVideoUseCase.kt")
-        property("sonar.exclusions", "/test/, **/Test.kt")
+        // Exclude everything except usecases
+        property("sonar.coverage.exclusions",
+            "**/adapters/**/*.kt," +
+            "**/commons/**/*.kt," +
+            "**/entities/**/*.kt," +
+            "**/config/**/*.kt," +
+            "**/Application.kt," +
+            "**/usecases/process/ProcessVideoUseCase.kt," +
+            "**/*Test*.kt," +
+            "**/test/**"
+        )
+        property("sonar.exclusions", "**/*Test*.kt,**/test/**")
     }
 }

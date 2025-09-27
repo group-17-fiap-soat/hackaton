@@ -105,6 +105,28 @@ class ProcessVideoUseCase(
 
             println("✅ ZIP criado: ${zipPath.absolutePath}")
 
+            // Send success email
+            val subject = "Processamento de Vídeo Concluído com Sucesso - ${video.originalVideoPath} - FIAP X"
+            val emailBody = """
+                Olá, ${user.name ?: "usuário"},
+
+                Ótimas notícias! O processamento do seu vídeo "${video.originalVideoPath}" foi concluído com sucesso.
+
+                **Detalhes do processamento:**
+                • Frames extraídos: ${frames.size}
+                • Arquivo ZIP gerado: $zipFilename
+                • Data de processamento: ${LocalDateTime.now()}
+
+                O arquivo com todos os frames extraídos está disponível para download.
+
+                Obrigado por usar nossa plataforma!
+
+                Atenciosamente,
+                Equipe FIAP X
+            """.trimIndent()
+
+            sendEmail.execute(user.email!!, subject, emailBody)
+
             return VideoResponseV1(
                 zipPath = zipFilename,
                 frameCount = frames.size,
