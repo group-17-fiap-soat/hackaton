@@ -4,6 +4,7 @@ import hackaton.fiapx.commons.dto.response.VideoResponseV1
 import hackaton.fiapx.commons.enums.VideoProcessStatusEnum
 import hackaton.fiapx.entities.Video
 import hackaton.fiapx.entities.User
+import hackaton.fiapx.usecases.RedisCacheUseCase
 import hackaton.fiapx.usecases.SendEmailUseCase
 import org.springframework.stereotype.Service
 import java.io.File
@@ -14,11 +15,22 @@ import java.time.LocalDateTime
 @Service
 class ProcessVideoUseCase(
     private val createZipFile: CreateZipFileUseCase,
-    private val sendEmail: SendEmailUseCase
+    private val sendEmail: SendEmailUseCase,
+    private val redisCacheUseCase: RedisCacheUseCase
 ) {
 
     fun execute(video: Video, user: User): VideoResponseV1 {
         println("Iniciando processamento: ${video.originalVideoPath}")
+
+        // Verificar se já está sendo processado (Redis Lock)
+        if (!redisCacheUseCase.acquireProcessingLock(video.id!!)) {
+            println("Vídeo ${video.id} já está sendo processado")
+            redisCacheUseCase.cacheVideoProcessingStatus(video.id, "ALREADY_PROCESSING")
+            return VideoResponseV1(status = VideoProcessStatusEnum.PROCESSING)
+        }
+
+        redisCacheUseCase.cacheVideoProcessingStatus(video.id, "PROCESSING")
+
         val timestamp = LocalDateTime.now().toString()
         val videoPath = video.originalVideoPath
 
@@ -42,6 +54,7 @@ class ProcessVideoUseCase(
 
             if (exitCode != 0) {
                 println("Erro no  ffmpeg: Exit $exitCode\nOutput: $output")
+                redisCacheUseCase.cacheVideoProcessingStatus(video.id, "ERROR_FFMPEG")
                 return VideoResponseV1(status = VideoProcessStatusEnum.ERROR)
             }
 
@@ -49,6 +62,7 @@ class ProcessVideoUseCase(
 
             if (frames.isEmpty()) {
                 println("Nenhum frame foi extraído do vídeo")
+                redisCacheUseCase.cacheVideoProcessingStatus(video.id, "ERROR_NO_FRAMES")
 
                 val subject = "Falha no Processamento do Vídeo ${video.originalVideoPath} - FIAP X"
                 val emailBody = """
@@ -81,6 +95,7 @@ class ProcessVideoUseCase(
                 createZipFile.execute(frames, zipPath)
             } catch (e: IOException) {
                 println("Erro ao criar arquivo ZIP: ${e.message}")
+                redisCacheUseCase.cacheVideoProcessingStatus(video.id, "ERROR_ZIP_CREATION")
 
                 val subject = "Falha no Processamento do Vídeo ${videoPath} - FIAP X"
                 val emailBody = """
@@ -105,7 +120,8 @@ class ProcessVideoUseCase(
 
             println("✅ ZIP criado: ${zipPath.absolutePath}")
 
-            // Send success email
+            redisCacheUseCase.cacheVideoProcessingStatus(video.id, "SUCCESS")
+
             val subject = "Processamento de Vídeo Concluído com Sucesso - ${video.originalVideoPath} - FIAP X"
             val emailBody = """
                 Olá, ${user.name},
@@ -134,6 +150,7 @@ class ProcessVideoUseCase(
             )
 
         } finally {
+            redisCacheUseCase.releaseProcessingLock(video.id)
             tempDir.deleteRecursively()
         }
     }
