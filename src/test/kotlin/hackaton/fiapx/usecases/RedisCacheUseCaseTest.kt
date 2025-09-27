@@ -12,6 +12,8 @@ import java.time.Duration
 import java.util.*
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class RedisCacheUseCaseTest {
 
@@ -34,11 +36,8 @@ class RedisCacheUseCaseTest {
 
         redisCacheUseCase.cacheVideoProcessingStatus(videoId, status)
 
-        verify(valueOperations).set(
-            eq("video:status:$videoId"),
-            eq(status),
-            eq(Duration.ofMinutes(30))
-        )
+        verify(valueOperations).set("video:status:$videoId", status)
+        verify(redisTemplate).expire("video:status:$videoId", Duration.ofMinutes(30))
     }
 
     @Test
@@ -49,22 +48,19 @@ class RedisCacheUseCaseTest {
 
         redisCacheUseCase.cacheVideoProcessingStatus(videoId, status, customTtl)
 
-        verify(valueOperations).set(
-            eq("video:status:$videoId"),
-            eq(status),
-            eq(Duration.ofMinutes(customTtl))
-        )
+        verify(valueOperations).set("video:status:$videoId", status)
+        verify(redisTemplate).expire("video:status:$videoId", Duration.ofMinutes(customTtl))
     }
 
     @Test
     fun `handles redis exception during status caching gracefully`() {
         val videoId = UUID.randomUUID()
         val status = "ERROR"
-        `when`(valueOperations.set(any(), any(), any<Duration>())).thenThrow(RuntimeException("Redis connection failed"))
+        `when`(valueOperations.set(any(), any())).thenThrow(RuntimeException("Redis connection failed"))
 
         redisCacheUseCase.cacheVideoProcessingStatus(videoId, status)
 
-        verify(valueOperations).set(any(), any(), any<Duration>())
+        verify(valueOperations).set(any(), any())
     }
 
     @Test
@@ -197,7 +193,102 @@ class RedisCacheUseCaseTest {
         redisCacheUseCase.cacheVideoProcessingStatus(videoId1, status1)
         redisCacheUseCase.cacheVideoProcessingStatus(videoId2, status2)
 
-        verify(valueOperations).set(eq("video:status:$videoId1"), eq(status1), any<Duration>())
-        verify(valueOperations).set(eq("video:status:$videoId2"), eq(status2), any<Duration>())
+        verify(valueOperations).set("video:status:$videoId1", status1)
+        verify(valueOperations).set("video:status:$videoId2", status2)
+        verify(redisTemplate).expire("video:status:$videoId1", Duration.ofMinutes(30))
+        verify(redisTemplate).expire("video:status:$videoId2", Duration.ofMinutes(30))
+    }
+
+    @Test
+    fun `retrieves video processing status successfully`() {
+        val videoId = UUID.randomUUID()
+        val expectedStatus = "PROCESSING"
+        `when`(valueOperations.get("video:status:$videoId")).thenReturn(expectedStatus)
+
+        val result = redisCacheUseCase.getVideoProcessingStatus(videoId)
+
+        assertEquals(expectedStatus, result)
+        verify(valueOperations).get("video:status:$videoId")
+    }
+
+    @Test
+    fun `returns null when video status does not exist`() {
+        val videoId = UUID.randomUUID()
+        `when`(valueOperations.get("video:status:$videoId")).thenReturn(null)
+
+        val result = redisCacheUseCase.getVideoProcessingStatus(videoId)
+
+        assertNull(result)
+    }
+
+    @Test
+    fun `handles redis exception during status retrieval gracefully`() {
+        val videoId = UUID.randomUUID()
+        `when`(valueOperations.get(any())).thenThrow(RuntimeException("Redis connection failed"))
+
+        val result = redisCacheUseCase.getVideoProcessingStatus(videoId)
+
+        assertNull(result)
+    }
+
+    @Test
+    fun `checks if video is being processed successfully`() {
+        val videoId = UUID.randomUUID()
+        `when`(redisTemplate.hasKey("lock:video:$videoId")).thenReturn(true)
+
+        val result = redisCacheUseCase.isVideoBeingProcessed(videoId)
+
+        assertTrue(result)
+        verify(redisTemplate).hasKey("lock:video:$videoId")
+    }
+
+    @Test
+    fun `returns false when video is not being processed`() {
+        val videoId = UUID.randomUUID()
+        `when`(redisTemplate.hasKey("lock:video:$videoId")).thenReturn(false)
+
+        val result = redisCacheUseCase.isVideoBeingProcessed(videoId)
+
+        assertFalse(result)
+    }
+
+    @Test
+    fun `handles redis exception during processing status check gracefully`() {
+        val videoId = UUID.randomUUID()
+        `when`(redisTemplate.hasKey(any<String>())).thenThrow(RuntimeException("Redis connection failed"))
+
+        val result = redisCacheUseCase.isVideoBeingProcessed(videoId)
+
+        assertFalse(result)
+    }
+
+    @Test
+    fun `redis health check returns true when healthy`() {
+        `when`(valueOperations.get("health:check")).thenReturn("ok")
+
+        val result = redisCacheUseCase.isRedisHealthy()
+
+        assertTrue(result)
+        verify(valueOperations).set("health:check", "ok")
+        verify(redisTemplate).expire("health:check", Duration.ofSeconds(10))
+        verify(valueOperations).get("health:check")
+    }
+
+    @Test
+    fun `redis health check returns false when unhealthy`() {
+        `when`(valueOperations.get("health:check")).thenReturn("not ok")
+
+        val result = redisCacheUseCase.isRedisHealthy()
+
+        assertFalse(result)
+    }
+
+    @Test
+    fun `redis health check handles exceptions gracefully`() {
+        `when`(valueOperations.set(any(), any())).thenThrow(RuntimeException("Redis connection failed"))
+
+        val result = redisCacheUseCase.isRedisHealthy()
+
+        assertFalse(result)
     }
 }

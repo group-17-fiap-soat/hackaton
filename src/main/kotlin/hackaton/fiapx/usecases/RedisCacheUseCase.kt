@@ -11,16 +11,26 @@ class RedisCacheUseCase(
     private val redisTemplate: RedisTemplate<String, Any>
 ) {
     private val logger = LoggerFactory.getLogger(RedisCacheUseCase::class.java)
+
     fun cacheVideoProcessingStatus(videoId: UUID, status: String, ttlMinutes: Long = 30) {
         try {
-            redisTemplate.opsForValue().set(
-                "video:status:$videoId",
-                status,
-                Duration.ofMinutes(ttlMinutes)
-            )
+            val key = "video:status:$videoId"
+            redisTemplate.opsForValue()[key] = status
+            redisTemplate.expire(key, Duration.ofMinutes(ttlMinutes))
             logger.debug("Cached video $videoId status: $status")
         } catch (e: Exception) {
             logger.warn("Failed to cache video status for $videoId: ${e.message}")
+        }
+    }
+
+    fun getVideoProcessingStatus(videoId: UUID): String? {
+        return try {
+            val status = redisTemplate.opsForValue()["video:status:$videoId"] as? String
+            logger.debug("Retrieved video $videoId status: $status")
+            status
+        } catch (e: Exception) {
+            logger.warn("Failed to get video status for $videoId: ${e.message}")
+            null
         }
     }
 
@@ -37,7 +47,6 @@ class RedisCacheUseCase(
             acquired
         } catch (e: Exception) {
             logger.warn("Failed to acquire lock for video $videoId: ${e.message}. Allowing processing to continue.")
-            // Se Redis falhar, permitir que o processamento continue
             true
         }
     }
@@ -49,6 +58,31 @@ class RedisCacheUseCase(
             released
         } catch (e: Exception) {
             logger.warn("Failed to release lock for video $videoId: ${e.message}")
+            false
+        }
+    }
+
+    fun isVideoBeingProcessed(videoId: UUID): Boolean {
+        return try {
+            val isProcessing = redisTemplate.hasKey("lock:video:$videoId")
+            logger.debug("Video $videoId is being processed: $isProcessing")
+            isProcessing
+        } catch (e: Exception) {
+            logger.warn("Failed to check processing status for video $videoId: ${e.message}")
+            false
+        }
+    }
+
+    fun isRedisHealthy(): Boolean {
+        return try {
+            val health: String = "health:check";
+            redisTemplate.opsForValue()[health] = "ok"
+            redisTemplate.expire(health, Duration.ofSeconds(10))
+            val result = redisTemplate.opsForValue()[health] == "ok"
+            logger.debug("Redis health check: $result")
+            result
+        } catch (e: Exception) {
+            logger.warn("Redis health check failed: ${e.message}")
             false
         }
     }
