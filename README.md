@@ -407,7 +407,7 @@ kubectl logs -f deployment/hackaton-app
 
 ### Variáveis de Ambiente para Produção
 ```yaml
-# k8s/config.yaml
+# k8s/config.yml
 DATABASE_HOST: postgres-service
 DATABASE_PORT: "5432"
 KAFKA_BOOTSTRAP_SERVERS: kafka-service:9092
