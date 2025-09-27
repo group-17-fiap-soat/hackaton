@@ -36,7 +36,14 @@ class SecurityConfig {
                         "/css/**",
                         "/js/**",
                         "/api/auth/**",
-                        "/favicon.ico"
+                        "/favicon.ico",
+                        // Swagger endpoints
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/v3/api-docs/**",
+                        "/v3/api-docs.yaml",
+                        "/swagger-resources/**",
+                        "/webjars/**"
                     ).permitAll()
                     .anyRequest().authenticated()
             }

@@ -19,6 +19,20 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
+        // Skip JWT authentication for Swagger endpoints
+        val requestPath = request.requestURI
+        val swaggerPaths = listOf(
+            "/swagger-ui",
+            "/v3/api-docs",
+            "/swagger-resources",
+            "/webjars"
+        )
+
+        if (swaggerPaths.any { requestPath.startsWith(it) }) {
+            filterChain.doFilter(request, response)
+            return
+        }
+
         val authHeader = request.getHeader("Authorization")
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
