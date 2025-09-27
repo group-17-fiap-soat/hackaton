@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: hackaton-keyframe
-          image: 361598269712.dkr.ecr.us-east-1.amazonaws.com/hackaton-keyframe:latest
+          image: 361598269712.dkr.ecr.us-east-1.amazonaws.com/keyframe-hackaton:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
