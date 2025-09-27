@@ -83,3 +83,16 @@ jwt:
   secret: SEFDS0FUT05fMjAyNV9TRU5IQV9HUk9VUF8xN19GSUFQWAo=
   expiration:
     ms: 86400000
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+  show-actuator: false
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  packages-to-scan: hackaton.fiapx.adapters.controllers
+  paths-to-match: /api/**
