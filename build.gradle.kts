@@ -46,6 +46,7 @@ dependencies {
     implementation("org.apache.kafka:kafka-clients")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.springframework.boot:spring-boot-starter-mail")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")
@@ -58,10 +59,9 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework.kafka:spring-kafka-test")
     testImplementation("org.testcontainers:kafka")
+    testImplementation("org.mockito:mockito-inline:5.2.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.3.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-    implementation("org.springframework.boot:spring-boot-starter-mail")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
 }
 
 kotlin {
@@ -78,6 +78,7 @@ allOpen {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    jvmArgs("-XX:+EnableDynamicAgentLoading")
 }
 
 
