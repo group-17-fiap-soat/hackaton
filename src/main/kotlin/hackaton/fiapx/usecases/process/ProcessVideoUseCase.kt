@@ -52,7 +52,7 @@ class ProcessVideoUseCase(
 
                 val subject = "Falha no Processamento do Vídeo ${video.originalVideoPath} - FIAP X"
                 val emailBody = """
-                    Olá, ${user.name ?: "usuário"},
+                    Olá, ${user.name},
 
                     Houve um problema ao processar o seu vídeo "${video.originalVideoPath}".
 
@@ -84,7 +84,7 @@ class ProcessVideoUseCase(
 
                 val subject = "Falha no Processamento do Vídeo ${videoPath} - FIAP X"
                 val emailBody = """
-                    Olá, ${user.name ?: "usuário"},
+                    Olá, ${user.name},
 
                     Houve um problema ao finalizar o processamento do seu vídeo "$videoPath".
 
@@ -108,7 +108,7 @@ class ProcessVideoUseCase(
             // Send success email
             val subject = "Processamento de Vídeo Concluído com Sucesso - ${video.originalVideoPath} - FIAP X"
             val emailBody = """
-                Olá, ${user.name ?: "usuário"},
+                Olá, ${user.name},
 
                 Ótimas notícias! O processamento do seu vídeo "${video.originalVideoPath}" foi concluído com sucesso.
 
