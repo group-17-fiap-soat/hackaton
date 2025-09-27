@@ -39,9 +39,12 @@ jobs:
       - name: Run Sonar with Gradle
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
           ./gradlew sonarqube \
             -Dsonar.login=${SONAR_TOKEN} \
+            -Dsonar.host.url="${SONAR_HOST_URL}" \
+            -Dsonar.projectKey=keyframe \
             -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml \
             -Dsonar.scanner.metadataFilePath=$(pwd)/build/sonar/report-task.txt
 
