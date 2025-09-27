@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: keyframe-hackaton-app
+  name: hackaton-keyframe-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: keyframe-hackaton-app
+      app: hackaton-keyframe-app
   template:
     metadata:
       labels:
-        app: keyframe-hackaton-app
+        app: hackaton-keyframe-app
     spec:
       containers:
-        - name: keyframe-hackaton
-          image: 361598269712.dkr.ecr.us-east-1.amazonaws.com/keyframe-hackaton:latest
+        - name: hackaton-keyframe
+          image: 361598269712.dkr.ecr.us-east-1.amazonaws.com/hackaton-keyframe:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -40,13 +40,13 @@ spec:
             - name: DATABASE_USER
               valueFrom:
                 secretKeyRef:
-                  name: keyframe-hackaton-secret
+                  name: hackaton-keyframe-secret
                   key: DATABASE_USER
 
             - name: DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: keyframe-hackaton-secret
+                  name: hackaton-keyframe-secret
                   key: DATABASE_PASSWORD
 
           resources:
@@ -61,11 +61,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: keyframe-hackaton-service
+  name: hackaton-keyframe-service
 spec:
   type: LoadBalancer
   selector:
-    app: keyframe-hackaton-app
+    app: hackaton-keyframe-app
   ports:
     - name: http
       protocol: TCP
@@ -76,21 +76,21 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: keyframe-hackaton-ingress
+  name: hackaton-keyframe-ingress
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-    - host: fiap-soat-seventeen-keyframe-hackaton-service.com
+    - host: fiap-soat-seventeen-hackaton-keyframe-service.com
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: keyframe-hackaton-service
+                name: hackaton-keyframe-service
                 port:
                   number: 80
 
@@ -98,12 +98,12 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: keyframe-hackaton-app
+  name: hackaton-keyframe-app
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: keyframe-hackaton-app
+    name: hackaton-keyframe-app
   minReplicas: 1
   maxReplicas: 2
   metrics:
