@@ -44,7 +44,7 @@ jobs:
           ./gradlew sonarqube \
             -Dsonar.login=${SONAR_TOKEN} \
             -Dsonar.host.url="${SONAR_HOST_URL}" \
-            -Dsonar.projectKey=keyframe \
+            -Dsonar.projectKey=hackaton \
             -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml \
             -Dsonar.scanner.metadataFilePath=$(pwd)/build/sonar/report-task.txt
 
