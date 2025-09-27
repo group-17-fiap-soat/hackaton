@@ -75,9 +75,10 @@ class RedisCacheUseCase(
 
     fun isRedisHealthy(): Boolean {
         return try {
-            redisTemplate.opsForValue()["health:check"] = "ok"
-            redisTemplate.expire("health:check", Duration.ofSeconds(10))
-            val result = redisTemplate.opsForValue()["health:check"] == "ok"
+            val health: String = "health:check";
+            redisTemplate.opsForValue()[health] = "ok"
+            redisTemplate.expire(health, Duration.ofSeconds(10))
+            val result = redisTemplate.opsForValue()[health] == "ok"
             logger.debug("Redis health check: $result")
             result
         } catch (e: Exception) {
