@@ -4,7 +4,7 @@ plugins {
     id("org.springframework.boot") version "3.5.4"
     id("io.spring.dependency-management") version "1.1.7"
     kotlin("plugin.jpa") version "1.9.25"
-    id("org.sonarqube") version "6.3.1.5724"
+    id("org.sonarqube") version "6.2.0.5505"
 }
 
 group = "hackaton"
@@ -78,9 +78,17 @@ allOpen {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
 sonar {
     properties {
         property("sonar.projectKey", "hackaton")
         property("sonar.projectName", "hackaton")
+        property("sonar.coverage.inclusions", "src/main/kotlin/hackaton/fiapx/usecases//*.kt")
+        property("sonar.tests", "src/test/kotlin")
+        property("sonar.kotlin.coverage.reportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
+        property("sonar.scanner.metadataFilePath", file("${layout.buildDirectory}/sonar/report-task.txt").absolutePath)
+
+        property("sonar.coverage.exclusions", "/src/test/, /Test.kt")
+        property("sonar.exclusions", "/test/, **/Test.kt")
     }
 }
