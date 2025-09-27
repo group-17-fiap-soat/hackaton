@@ -1,0 +1,56 @@
+#name: Sonar Quality Gate Analysis
+#
+#on:
+#  pull_request:
+#    branches:
+#      - main
+#
+#jobs:
+#  build-and-sonarqube:
+#    name: Build and Sonar
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#        with:
+#          fetch-depth: 0
+#
+#      - name: Cache SonarQube packages
+#        uses: actions/cache@v4
+#        with:
+#          path: ~/.sonar/cache
+#          key: ${{ runner.os }}-sonar
+#          restore-keys: ${{ runner.os }}-sonar
+#
+#      - name: Cache Gradle packages
+#        uses: actions/cache@v4
+#        with:
+#          path: ~/.gradle/caches
+#          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+#          restore-keys: ${{ runner.os }}-gradle
+#
+#      - name: Grant execute permission to gradlew
+#        run: chmod +x ./gradlew
+#
+#      - name: Run tests and generate coverage
+#        run: ./gradlew build jacocoTestReport
+#
+#      - name: Run Sonar with Gradle
+#        env:
+#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+#        run: |
+#          ./gradlew sonarqube \
+#            -Dsonar.login=${SONAR_TOKEN} \
+#            -Dsonar.host.url="${SONAR_HOST_URL}" \
+#            -Dsonar.projectKey=hackaton \
+#            -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml \
+#            -Dsonar.scanner.metadataFilePath=$(pwd)/build/sonar/report-task.txt
+#
+#      - name: Wait for SonarQube Quality Gate result
+#        uses: sonarsource/sonarqube-quality-gate-action@master
+#        with:
+#          scanMetadataReportFile: build/sonar/report-task.txt
+#        env:
+#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

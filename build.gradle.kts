@@ -3,6 +3,7 @@ plugins {
     kotlin("plugin.spring") version "1.9.25"
     id("org.springframework.boot") version "3.5.4"
     id("io.spring.dependency-management") version "1.1.7"
+    id("jacoco")
     kotlin("plugin.jpa") version "1.9.25"
     id("org.sonarqube") version "6.2.0.5505"
 }
@@ -78,6 +79,21 @@ allOpen {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required = true
+        csv.required = false
+        html.required = true
+    }
+}
+
 
 sonar {
     properties {
