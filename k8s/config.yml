@@ -22,19 +22,19 @@ spec:
             - name: DATABASE_HOST
               valueFrom:
                 configMapKeyRef:
-                  name: keyframe-hackaton-config
+                  name: hackaton-keyframe-config
                   key: DATABASE_HOST
 
             - name: DATABASE
               valueFrom:
                 configMapKeyRef:
-                  name: keyframe-hackaton-config
+                  name: hackaton-keyframe-config
                   key: DATABASE
 
             - name: DATABASE_PORT
               valueFrom:
                 configMapKeyRef:
-                  name: keyframe-hackaton-config
+                  name: hackaton-keyframe-config
                   key: DATABASE_PORT
 
             - name: DATABASE_USER
