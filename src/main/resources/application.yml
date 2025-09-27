@@ -80,7 +80,7 @@ server:
   forward-headers-strategy: native
 
 jwt:
-  secret: SEFDS0FUT05fMjAyNV9TRU5IQV9HUk9VUF8xN19GSUFQWAo=
+  secret: bXktc3VwZXItc2VjdXJlLWp3dC1rZXktdGhhdC1pcy12ZXJ5LWxvbmctYW5kLXNlY3VyZS1mb3ItcHJvZHVjdGlvbi1hbmQtbXVzdC1iZS1hdC1sZWFzdC0yNTYtYml0cy1mb3ItaG1hYy1zaGEtYWxnb3JpdGhtcw==
   expiration:
     ms: 86400000
 
