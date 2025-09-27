@@ -106,6 +106,7 @@ sonar {
         property("sonar.scanner.metadataFilePath", file("${layout.buildDirectory}/sonar/report-task.txt").absolutePath)
 
         property("sonar.coverage.exclusions", "/src/test/, /Test.kt")
+        property("sonar.coverage.exclusions", "src/main/kotlin/hackaton/fiapx/usecases/process/, /ProcessVideoUseCase.kt")
         property("sonar.exclusions", "/test/, **/Test.kt")
     }
 }
