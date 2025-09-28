@@ -123,6 +123,8 @@ management:
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true
     prometheus:
       enabled: true
   metrics:
@@ -134,3 +136,4 @@ management:
         http.server.requests: true
     tags:
       application: hackaton-keyframe-app
+
