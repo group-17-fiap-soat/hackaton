@@ -49,6 +49,34 @@ spec:
                   name: hackaton-keyframe-secret
                   key: DATABASE_PASSWORD
 
+            - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
+              value: "health,info,metrics,prometheus"
+
+            - name: MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED
+              value: "true"
+
+            - name: MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED
+              value: "true"
+
+            - name: MANAGEMENT_METRICS_DISTRIBUTION_PERCENTILES_HISTOGRAM_HTTP_SERVER_REQUESTS
+              value: "true"
+
+            - name: MANAGEMENT_METRICS_TAGS_APPLICATION
+              value: "hackaton-keyframe-app"
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
           resources:
             requests:
               memory: "512Mi"
@@ -72,6 +100,20 @@ spec:
       port: 80
       targetPort: 8080
 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hackaton-keyframe-app
+  namespace: default
+spec:
+  selector:
+    app: hackaton-keyframe-app
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
