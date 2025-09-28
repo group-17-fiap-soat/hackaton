@@ -51,16 +51,12 @@ spec:
 
             - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
               value: "health,info,metrics,prometheus"
-
             - name: MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED
               value: "true"
-
             - name: MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED
               value: "true"
-
             - name: MANAGEMENT_METRICS_DISTRIBUTION_PERCENTILES_HISTOGRAM_HTTP_SERVER_REQUESTS
-              value: "true"
-
+              value: "0.95,0.99"
             - name: MANAGEMENT_METRICS_TAGS_APPLICATION
               value: "hackaton-keyframe-app"
 
