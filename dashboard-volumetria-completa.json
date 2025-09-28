@@ -1,0 +1,261 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Hackaton - Volumetria Completa (Dual APIs)",
+    "tags": ["hackaton", "volumetria", "performance", "multi-api"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Status das APIs",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=\"hackaton-backend\"}",
+            "legendFormat": "API 8080",
+            "refId": "A"
+          },
+          {
+            "expr": "up{job=\"hackaton-api-8082\"}",
+            "legendFormat": "API 8082",
+            "refId": "B"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 4, "x": 0, "y": 0},
+        "options": {
+          "reduceOptions": {"values": false, "calcs": ["lastNotNull"]},
+          "colorMode": "background"
+        }
+      },
+      {
+        "id": 2,
+        "title": "Requisições HTTP/seg - Ambas APIs",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(rate(http_server_requests_seconds_count{job=~\"hackaton-backend|hackaton-api-8082\"}[5m]))",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 4, "x": 4, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Threads JVM Total",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(jvm_threads_live_threads{job=~\"hackaton-backend|hackaton-api-8082\"})",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 4, "x": 8, "y": 0}
+      },
+      {
+        "id": 4,
+        "title": "Comparação de Requisições - APIs",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "sum(rate(http_server_requests_seconds_count{job=\"hackaton-backend\"}[5m]))",
+            "legendFormat": "API 8080",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(rate(http_server_requests_seconds_count{job=\"hackaton-api-8082\"}[5m]))",
+            "legendFormat": "API 8082",
+            "refId": "B"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 4}
+      },
+      {
+        "id": 5,
+        "title": "Requisições por Status Code - Ambas APIs",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "sum by (status, job) (rate(http_server_requests_seconds_count{job=~\"hackaton-backend|hackaton-api-8082\"}[5m]))",
+            "legendFormat": "{{job}} - {{status}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 4}
+      },
+      {
+        "id": 6,
+        "title": "Tempo de Resposta - Comparativo APIs",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum by (le, job) (rate(http_server_requests_seconds_bucket{job=\"hackaton-backend\"}[5m])))",
+            "legendFormat": "API 8080 - p95",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum by (le, job) (rate(http_server_requests_seconds_bucket{job=\"hackaton-api-8082\"}[5m])))",
+            "legendFormat": "API 8082 - p95",
+            "refId": "B"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 12},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s"
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Memória JVM - Comparativo",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "jvm_memory_used_bytes{job=\"hackaton-backend\", area=\"heap\"}",
+            "legendFormat": "API 8080 - Heap",
+            "refId": "A"
+          },
+          {
+            "expr": "jvm_memory_used_bytes{job=\"hackaton-api-8082\", area=\"heap\"}",
+            "legendFormat": "API 8082 - Heap",
+            "refId": "B"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 12},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "bytes"
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "CPU Usage - Ambas APIs",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "system_cpu_usage{job=\"hackaton-backend\"} * 100",
+            "legendFormat": "API 8080 - CPU",
+            "refId": "A"
+          },
+          {
+            "expr": "system_cpu_usage{job=\"hackaton-api-8082\"} * 100",
+            "legendFormat": "API 8082 - CPU",
+            "refId": "B"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 20},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Pool de Conexões Database - Comparativo",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "hikaricp_connections_active{job=\"hackaton-backend\"}",
+            "legendFormat": "API 8080 - Ativas",
+            "refId": "A"
+          },
+          {
+            "expr": "hikaricp_connections_active{job=\"hackaton-api-8082\"}",
+            "legendFormat": "API 8082 - Ativas",
+            "refId": "B"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 20}
+      },
+      {
+        "id": 10,
+        "title": "Top Endpoints - API 8080",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "topk(5, sum by (uri) (rate(http_server_requests_seconds_count{job=\"hackaton-backend\", status!~\"404\"}[5m])))",
+            "legendFormat": "{{uri}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 28}
+      },
+      {
+        "id": 11,
+        "title": "Top Endpoints - API 8082",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "topk(5, sum by (uri) (rate(http_server_requests_seconds_count{job=\"hackaton-api-8082\", status!~\"404\"}[5m])))",
+            "legendFormat": "{{uri}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 28}
+      },
+      {
+        "id": 12,
+        "title": "Volumetria Total - Últimas 24h",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "sum by (job, status) (increase(http_server_requests_seconds_count{job=~\"hackaton-backend|hackaton-api-8082\"}[24h]))",
+            "refId": "A",
+            "format": "table"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 36}
+      },
+      {
+        "id": 13,
+        "title": "Erros HTTP 5xx - Ambas APIs",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "sum by (job) (rate(http_server_requests_seconds_count{job=~\"hackaton-backend|hackaton-api-8082\", status=~\"5..\"}[5m]))",
+            "legendFormat": "{{job}} - Erros 5xx",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 4, "x": 8, "y": 36}
+      },
+      {
+        "id": 14,
+        "title": "Garbage Collection - Comparativo",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(jvm_gc_pause_seconds_count{job=\"hackaton-backend\"}[5m])",
+            "legendFormat": "API 8080 - {{gc}}",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(jvm_gc_pause_seconds_count{job=\"hackaton-api-8082\"}[5m])",
+            "legendFormat": "API 8082 - {{gc}}",
+            "refId": "B"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 44}
+      },
+      {
+        "id": 15,
+        "title": "Resumo Performance - APIs",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "avg by (job) (histogram_quantile(0.95, sum by (le, job) (rate(http_server_requests_seconds_bucket{job=~\"hackaton-backend|hackaton-api-8082\"}[5m]))))",
+            "refId": "A",
+            "format": "table"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 52}
+      }
+    ],
+    "time": {"from": "now-6h", "to": "now"},
+    "refresh": "10s",
+    "schemaVersion": 37,
+    "version": 2
+  }
+}
