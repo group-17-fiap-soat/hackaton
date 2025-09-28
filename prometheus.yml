@@ -3,23 +3,30 @@ global:
   evaluation_interval: 30s
 
 scrape_configs:
-  # Prometheus itself
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
 
-  # Spring Boot application - usando localhost para teste local
-  - job_name: 'hackaton-backend'
-    static_configs:
-      - targets: ['host.docker.internal:8080']
-    metrics_path: '/actuator/prometheus'
-    scrape_interval: 30s
-    scrape_timeout: 10s
+  - job_name: 'hackaton-apps'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names: ['default']
+    relabel_configs:
+      - action: keep
+        source_labels: [__meta_kubernetes_pod_name]
+        regex: 'hackaton-(auth-app|keyframe-app).*'
+      # caminho do actuator
+      - action: replace
+        target: __metrics_path__
+        replacement: /actuator/prometheus
 
-  # Segunda API na porta 8082
-  - job_name: 'hackaton-api-8082'
-    static_configs:
-      - targets: ['host.docker.internal:8082']
-    metrics_path: '/actuator/prometheus'
-    scrape_interval: 30s
-    scrape_timeout: 10s
+      - action: replace
+        source_labels: [__meta_kubernetes_pod_ip]
+        target: __address__
+        replacement: '$1:8080'
+
+      - target_label: namespace
+        source_labels: [__meta_kubernetes_namespace]
+      - target_label: pod
+        source_labels: [__meta_kubernetes_pod_name]
