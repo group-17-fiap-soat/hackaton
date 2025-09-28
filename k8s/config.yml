@@ -25,6 +25,8 @@ spec:
                   name: hackaton-keyframe-config
                   key: DATABASE_HOST
 
+
+
             - name: DATABASE
               valueFrom:
                 configMapKeyRef:
@@ -48,6 +50,32 @@ spec:
                 secretKeyRef:
                   name: hackaton-keyframe-secret
                   key: DATABASE_PASSWORD
+
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: hackaton-keyframe-config
+                  key: REDIS_HOST
+
+
+            - name: EMAIL_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: hackaton-keyframe-config
+                  key: EMAIL_USERNAME
+
+            - name: EMAIL_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: hackaton-keyframe-config
+                  key: EMAIL_PASSWORD
+
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: hackaton-keyframe-config
+                  key: KAFKA_BOOTSTRAP_SERVERS
+
 
             - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
               value: "health,info,metrics,prometheus"
