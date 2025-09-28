@@ -58,9 +58,6 @@ spec:
             - name: MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED
               value: "true"
 
-            - name: MANAGEMENT_METRICS_DISTRIBUTION_PERCENTILES_HISTOGRAM_HTTP_SERVER_REQUESTS
-              value: "true"
-
             - name: MANAGEMENT_METRICS_DISTRIBUTION_PERCENTILES_HTTP_SERVER_REQUESTS
               value: "0.95,0.99"
 
