@@ -1,0 +1,32 @@
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'hackaton-apps'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names: ['default']
+    relabel_configs:
+      - action: keep
+        source_labels: [__meta_kubernetes_pod_name]
+        regex: 'hackaton-(auth-app|keyframe-app).*'
+      # caminho do actuator
+      - action: replace
+        target: __metrics_path__
+        replacement: /actuator/prometheus
+
+      - action: replace
+        source_labels: [__meta_kubernetes_pod_ip]
+        target: __address__
+        replacement: '$1:8080'
+
+      - target_label: namespace
+        source_labels: [__meta_kubernetes_namespace]
+      - target_label: pod
+        source_labels: [__meta_kubernetes_pod_name]
